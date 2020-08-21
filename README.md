@@ -1,5 +1,6 @@
 # KickMath
 A library for performing a few simple mathematical calculations optimized for speed, efficiency, and for use with arrays.
+Specifically written for Arduino, but can be ported to other microcontrollers.
 
 
 Partially used in Linnes Lab's Kick LL smartwatch, a research device for measuring heart rate, respiration, and blood oxygen.
