@@ -2,7 +2,7 @@
  FILENAME:      KickMath.h
  AUTHOR:        Orlando S. Hoilett, Alyson S. Pickering, and Akio K. Fujita
  EMAIL:     	orlandohoilett@gmail.com
- VERSION:		3.0.0
+ VERSION:		3.1.0
  
  
  DESCRIPTION
@@ -30,6 +30,9 @@
  Version 3.0.0
  2020/08/18:1143> (UTC-5)
  			- moving to a templated class
+ Version 3.1.0
+ 2020/08/22:1650>
+ 			- added a calculate median function.
  
  
  DISCLAIMER
@@ -69,6 +72,7 @@
 #include <Arduino.h>
 
 //Custom Kick Libraries
+#include "KickSort.h"
 #include "ttestTable.h"
 
 
@@ -98,6 +102,7 @@ public:
 
 	
 	static Type calcAverage(uint16_t samples, const Type data[]);
+	static Type calcMedian(uint16_t samples, const Type data[], Type tmpArray[]);
 	static float calcStDev(uint16_t samples, const Type data[]);
 	
 	static Type calcPeaktoPeak(uint16_t samples, const Type data[]);
@@ -356,6 +361,26 @@ template<typename Type>
 Type KickMath<Type>::calcAverage(uint16_t samples, const Type data[])
 {
 	return getSum(samples,data)/(float)samples;
+}
+
+
+template<typename Type>
+Type KickMath<Type>::calcMedian(uint16_t samples, const Type data[], Type tmpArray[])
+{
+	//copy array
+	for(uint16_t i = 0; i < samples; i++)
+	{
+		tmpArray[i] = data[i];
+	}
+	
+	//sort array
+	KickSort<Type>::quickSort(tmpArray, samples);
+	
+	
+	//calculate median
+	uint16_t middleIndex = samples/2; //integer division so it truncates decimals in the event that samples is odd
+	if(samples%2 == 0) return (tmpArray[middleIndex] + tmpArray[(middleIndex)-1])/2.0;
+	else return tmpArray[middleIndex];
 }
 
 
