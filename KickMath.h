@@ -2,7 +2,7 @@
  FILENAME:      KickMath.h
  AUTHOR:        Orlando S. Hoilett, Alyson S. Pickering, and Akio K. Fujita
  EMAIL:     	orlandohoilett@gmail.com
- VERSION:		3.1.0
+ VERSION:		4.0.0
  
  
  DESCRIPTION
@@ -33,6 +33,11 @@
  Version 3.1.0
  2020/08/22:1650>
  			- added a calculate median function.
+ Version 4.0.0
+ 2020/08/23:0423> (UTC-5)
+ 			- changed magnitude types to int32_t to match isqrt function
+ 			and prevent overflow. Except for in centroid function since the
+ 			magnitude parameter is the only parameter that needs to be templatized
  
  
  DISCLAIMER
