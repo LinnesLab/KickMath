@@ -102,7 +102,9 @@ public:
 
 	
 	static Type calcAverage(uint16_t samples, const Type data[]);
+	static Type calcMedian(uint16_t samples, Type data[]);
 	static Type calcMedian(uint16_t samples, const Type data[], Type tmpArray[]);
+	
 	static float calcStDev(uint16_t samples, const Type data[]);
 	
 	static Type calcPeaktoPeak(uint16_t samples, const Type data[]);
@@ -381,6 +383,20 @@ Type KickMath<Type>::calcMedian(uint16_t samples, const Type data[], Type tmpArr
 	uint16_t middleIndex = samples/2; //integer division so it truncates decimals in the event that samples is odd
 	if(samples%2 == 0) return (tmpArray[middleIndex] + tmpArray[(middleIndex)-1])/2.0;
 	else return tmpArray[middleIndex];
+}
+
+
+template<typename Type>
+Type KickMath<Type>::calcMedian(uint16_t samples, Type data[])
+{
+	//sort array
+	KickSort<Type>::quickSort(data, samples);
+	
+	
+	//calculate median
+	uint16_t middleIndex = samples/2; //integer division so it truncates decimals in the event that samples is odd
+	if(samples%2 == 0) return (data[middleIndex] + data[(middleIndex)-1])/2.0;
+	else return data[middleIndex];
 }
 
 
