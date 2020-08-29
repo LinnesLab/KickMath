@@ -2,7 +2,7 @@
  FILENAME:      KickMath.h
  AUTHOR:        Orlando S. Hoilett, Alyson S. Pickering, and Akio K. Fujita
  EMAIL:     	orlandohoilett@gmail.com
- VERSION:		4.0.0
+ VERSION:		4.1.0
  
  
  DESCRIPTION
@@ -11,7 +11,8 @@
  derivatives, etc.
  
  This is a static class. Function calls must be preceded with the class name
- and scope resolution operator as follows KickMath::
+ and scope resolution operator as follows KickMath<variable_type>:: where
+ variable_type can be int16_t, uint32_t, float, etc.
  
  
  UPDATES
@@ -29,15 +30,21 @@
  			- Updated comments.
  Version 3.0.0
  2020/08/18:1143> (UTC-5)
- 			- moving to a templated class
+ 			- moved to a templated class
  Version 3.1.0
  2020/08/22:1650>
  			- added a calculate median function.
  Version 4.0.0
  2020/08/23:0423> (UTC-5)
- 			- changed magnitude types to int32_t to match isqrt function
- 			and prevent overflow. Except for in centroid function since the
- 			magnitude parameter is the only parameter that needs to be templatized
+ 			- changed magnitude types to uint32_t to match isqrt function except
+ 			in centroid function since the magnitude parameter is the only
+ 			parameter that needs to be templatized.
+ Version 4.1.0
+ 2020/08/24:1733> (UTC-5)
+ 			- added a find function to find a specific value in an array as well
+			as a getMax and getMin function that searches within certain bounds.
+ 2020/08/29:1819> (UTC-5)
+			- added a cross-correlation function.
  
  
  DISCLAIMER
@@ -89,13 +96,20 @@ class KickMath
 
 public:
 	
-	static int32_t calcSqrt(Type num);
-	static int32_t calcMagnitude(Type x, Type y);
-	static int32_t calcMagnitude(Type x, Type y, Type z);
+	//static int32_t calcSqrt(int32_t num);
+	static uint32_t calcSqrt(uint32_t num);
+	static uint32_t calcMagnitude(Type x, Type y);
+	static uint32_t calcMagnitude(Type x, Type y, Type z);
+	
+	
+	static uint16_t find(const uint16_t samples, const Type data[], const Type num);
+	static uint16_t find(const uint16_t samples, const Type data[], const Type num, const uint16_t i1, const uint16_t i2);
 	
 	
 	static Type getMax(uint16_t samples, const Type data[]);
+	static Type getMax(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2);
 	static Type getMin(uint16_t samples, const Type data[]);
+	static Type getMin(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2);
 	static float getSum(uint16_t samples, const Type data[]);
 	
 	
@@ -113,6 +127,7 @@ public:
 	static float calcStDev(uint16_t samples, const Type data[]);
 	
 	static Type calcPeaktoPeak(uint16_t samples, const Type data[]);
+	static Type calcPeaktoPeak(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2);
 	static Type calcRMS(uint16_t samples, const Type data[]);
 	
 	
@@ -126,6 +141,9 @@ public:
 	
 	static bool tTest(const Type data1[], const Type data2[], const uint16_t samples, const float alpha);
 	
+	
+	static float xcorr(const Type signalX[], const Type signalY[], uint16_t n);
+	
 };
 
 
@@ -137,24 +155,23 @@ public:
 //
 //Source: https://en.wikipedia.org/wiki/Methods_of_computing_square_roots
 //https://web.archive.org/web/20120306040058/http://medialab.freaknet.org/martin/src/sqrt/sqrt.c
+//template<typename Type>
 template<typename Type>
-int32_t KickMath<Type>::calcSqrt(Type val)
+uint32_t KickMath<Type>::calcSqrt(uint32_t val)
 {
-	int32_t num = (int32_t)val;
+	//if(val < 0) return 0;
 	
-	if(num < 0) return 0;
-	
-	int32_t res = 0;
-	int32_t bit = 1 << 30; // The second-to-top bit is set.
+	uint32_t res = 0;
+	uint32_t bit = 1 << 30; // The second-to-top bit is set.
 	// Same as ((unsigned) INT32_MAX + 1) / 2.
 	
 	// "bit" starts at the highest power of four <= the argument.
-	while (bit > num)
+	while (bit > val)
 		bit >>= 2;
 	
 	while (bit != 0) {
-		if (num >= res + bit) {
-			num -= res + bit;
+		if (val >= res + bit) {
+			val -= res + bit;
 			res = (res >> 1) + bit;
 		} else
 			res >>= 1;
@@ -170,7 +187,7 @@ int32_t KickMath<Type>::calcSqrt(Type val)
 //
 //Calculates the magnitude of a 2D vector
 template<typename Type>
-int32_t KickMath<Type>::calcMagnitude(Type x, Type y)
+uint32_t KickMath<Type>::calcMagnitude(Type x, Type y)
 {
 	return calcSqrt(x*x + y*y);
 }
@@ -183,9 +200,33 @@ int32_t KickMath<Type>::calcMagnitude(Type x, Type y)
 //
 //Calculates the magnitude of a 3D vector
 template<typename Type>
-int32_t KickMath<Type>::calcMagnitude(Type x, Type y, Type z)
+uint32_t KickMath<Type>::calcMagnitude(Type x, Type y, Type z)
 {
 	return calcSqrt(x*x + y*y + z*z);
+}
+
+
+template<typename Type>
+uint16_t KickMath<Type>::find(const uint16_t samples, const Type data[], const Type num)
+{
+	for(uint16_t i = 0; i < samples; i++)
+	{
+		if(data[i] == num) return i;
+	}
+	
+	return 0;
+}
+
+
+template<typename Type>
+uint16_t KickMath<Type>::find(const uint16_t samples, const Type data[], const Type num, const uint16_t i1, const uint16_t i2)
+{
+	for(uint16_t i = i1; i < i2; i++)
+	{
+		if(data[i] == num) return i;
+	}
+	
+	return 0;
 }
 
 
@@ -208,6 +249,23 @@ Type KickMath<Type>::getMax(uint16_t samples, const Type data[])
 	
 	return max;
 }
+
+
+template<typename Type>
+Type KickMath<Type>::getMax(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2)
+{
+	//Fence post solution: assume the first value
+	//is the max then compare and update from there
+	Type max = data[i1];
+	
+	for(uint16_t i = i1+1; i < i2; i++)
+	{
+		if (data[i] > max) max = data[i];
+	}
+	
+	return max;
+}
+
 
 
 //uint16_t KickMath::getMaxIndex(uint16_t samples, const int32_t data[])
@@ -314,6 +372,22 @@ Type KickMath<Type>::getMin(uint16_t samples, const Type data[])
 	Type min = data[0];
 	
 	for(uint16_t i = 1; i < samples; i++)
+	{
+		if (data[i] < min) min = data[i];
+	}
+	
+	return min;
+}
+
+
+template<typename Type>
+Type KickMath<Type>::getMin(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2)
+{
+	//Fence post solution: assume the first value
+	//is the min then compare and update from there
+	Type min = data[i1];
+	
+	for(uint16_t i = i1+1; i < i2; i++)
 	{
 		if (data[i] < min) min = data[i];
 	}
@@ -447,6 +521,13 @@ template<typename Type>
 Type KickMath<Type>::calcPeaktoPeak(uint16_t samples, const Type data[])
 {
 	return getMax(samples, data) - getMin(samples, data);
+}
+
+
+template<typename Type>
+Type KickMath<Type>::calcPeaktoPeak(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2)
+{
+	return KickMath<Type>::getMax(samples, data, i1, i2) - KickMath<Type>::getMin(samples, data, i1, i2);
 }
 
 
@@ -635,6 +716,35 @@ bool KickMath<Type>::tTest(const Type data1[], const Type data2[], const uint16_
 	//a95 is look up table for up to 35 degrees of freedom at
 	//alpha = 0.05 for two-tailed test
 	return abs(meanDiff/SE) > a95[df];
+}
+
+
+
+//Source: https://www.statisticshowto.com/cross-correlation/
+template<typename Type>
+float KickMath<Type>::xcorr(const Type signalX[], const Type signalY[], uint16_t n)
+{
+	int64_t sumX = 0; //declare variable for sum of X
+	int64_t sumY = 0; //declare variable for sum of Y
+	uint64_t sumXsqr = 0; //declare variable for sum of X^2
+	uint64_t sumYsqr = 0; //declare variable for sum of Y^2
+	int64_t sumXY = 0; //declare variable for sum of X*Y
+	
+	
+	//divide numbers by 10 to prevent data storage overflow
+	for(uint16_t i = 0; i < n; i++)
+	{
+		sumX += signalX[i]/10; //add current X data point to sum
+		sumY += signalY[i]/10; //add current Y data point to sum
+		sumXsqr += sq(signalX[i]/10); //add current X^2 to sum
+		sumYsqr += sq(signalY[i]/10); //add current Y^2 to sum
+		sumXY += (signalX[i]/10) * (signalY[i]/10); //add current X*Y to sum
+	}
+
+	
+	//calculate and return r value
+	//calcSqrt
+	return (n*sumXY - sumX*sumY)/sqrt((n*sumXsqr - sumX*sumX)*(n*sumYsqr - sumY*sumY));
 }
 
 
