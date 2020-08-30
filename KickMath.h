@@ -44,8 +44,34 @@
  			- added a find function to find a specific value in an array as well
 			as a getMax and getMin function that searches within certain bounds.
  2020/08/29:1819> (UTC-5)
-			- added a cross-correlation function.
+			- added a cross-correlation function, corr, that's synonymous with.
  
+ *******************************************************************************
+ *******************************************************************************
+ CHANGED VERSIONING to 4.0.0 since all edits after v3.0.0 (2020/08/18:1143> (UTC-5))
+ have been pre-release, having been added to a side branch and not the main
+ *******************************************************************************
+ *******************************************************************************
+ 
+ Version 4.0.0
+ 2020/08/22:1650> (UTC-5)
+ 			- added a calculate median function.
+ 2020/08/23:0423> (UTC-5)
+ 			- changed magnitude types to uint32_t to match isqrt function except
+ 			in centroid function since the magnitude parameter is the only
+ 			parameter that needs to be templatized.
+ 2020/08/24:1733> (UTC-5)
+ 			- added a find function to find a specific value in an array as well
+ 			as a getMax and getMin function that searches within certain bounds.
+ 2020/08/29:1819> (UTC-5)
+ 			- added a cross-correlation function, xcorr.
+ 			- added getAbsMax and getAbsMin functions that return the largest
+ 			and smallest value in an array regardless of sign
+ 2020/08/30:0758> (UTC-5)
+ 			- Chnaged xcorr function name to corr, making it equivalent to
+ 			MATLAB's corr function with input arrays with one column each. No
+			p-value calculation as of yet.
+
  
  DISCLAIMER
  Linnes Lab code, firmware, and software is released under the
@@ -106,8 +132,10 @@ public:
 	static uint16_t find(const uint16_t samples, const Type data[], const Type num, const uint16_t i1, const uint16_t i2);
 	
 	
+	static Type getAbsMax(uint16_t samples, const Type data[]);
 	static Type getMax(uint16_t samples, const Type data[]);
 	static Type getMax(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2);
+	static Type getAbsMin(uint16_t samples, const Type data[]);
 	static Type getMin(uint16_t samples, const Type data[]);
 	static Type getMin(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2);
 	static float getSum(uint16_t samples, const Type data[]);
@@ -142,7 +170,8 @@ public:
 	static bool tTest(const Type data1[], const Type data2[], const uint16_t samples, const float alpha);
 	
 	
-	static float xcorr(const Type signalX[], const Type signalY[], uint16_t n);
+	static float corr(const Type signalX[], const Type signalY[], uint16_t n);
+	//static float corr(const Type signalX[], const Type signalY[], uint16_t n, Type lags[]);
 	
 };
 
@@ -227,6 +256,27 @@ uint16_t KickMath<Type>::find(const uint16_t samples, const Type data[], const T
 	}
 	
 	return 0;
+}
+
+
+//int16_t KickMath::getMax(uint16_t samples, const int16_t data[])
+//samples		number of samples within the array
+//data			input array containing signal
+//
+//Finds the max value within an input array.
+template<typename Type>
+Type KickMath<Type>::getAbsMax(uint16_t samples, const Type data[])
+{
+	//Fence post solution: assume the first value
+	//is the max then compare and update from there
+	Type absMax = data[0];
+	
+	for(uint16_t i = 1; i < samples; i++)
+	{
+		if (abs(data[i]) > abs(absMax)) absMax = data[i];
+	}
+	
+	return absMax;
 }
 
 
@@ -356,6 +406,22 @@ void KickMath<Type>::getMaxIndex(uint16_t samples, const Type data[], uint16_t m
 			maxes[0] = i;
 		}
 	}
+}
+
+
+template<typename Type>
+Type KickMath<Type>::getAbsMin(uint16_t samples, const Type data[])
+{
+	//Fence post solution: assume the first value
+	//is the min then compare and update from there
+	Type absMin = data[0];
+	
+	for(uint16_t i = 1; i < samples; i++)
+	{
+		if (abs(data[i]) < abs(absMin)) absMin = data[i];
+	}
+	
+	return absMin;
 }
 
 
@@ -721,9 +787,15 @@ bool KickMath<Type>::tTest(const Type data1[], const Type data2[], const uint16_
 
 
 //Source: https://www.statisticshowto.com/cross-correlation/
+//https://www.statisticshowto.com/probability-and-statistics/
 template<typename Type>
-float KickMath<Type>::xcorr(const Type signalX[], const Type signalY[], uint16_t n)
+float KickMath<Type>::corr(const Type signalX[], const Type signalY[], uint16_t n)
 {
+	//this step adds roughly 70-90 us to the function with n = 128 or 366
+	Type abs_max_1 = abs(KickMath<Type>::getAbsMax(n, signalX));
+	Type abs_max_2 = abs(KickMath<Type>::getAbsMax(n, signalY));
+	
+
 	int64_t sumX = 0; //declare variable for sum of X
 	int64_t sumY = 0; //declare variable for sum of Y
 	uint64_t sumXsqr = 0; //declare variable for sum of X^2
@@ -731,19 +803,32 @@ float KickMath<Type>::xcorr(const Type signalX[], const Type signalY[], uint16_t
 	int64_t sumXY = 0; //declare variable for sum of X*Y
 	
 	
-	//divide numbers by 10 to prevent data storage overflow
-	for(uint16_t i = 0; i < n; i++)
+	if(abs_max_1 > 300 || abs_max_2 > 300)
 	{
-		sumX += signalX[i]/10; //add current X data point to sum
-		sumY += signalY[i]/10; //add current Y data point to sum
-		sumXsqr += sq(signalX[i]/10); //add current X^2 to sum
-		sumYsqr += sq(signalY[i]/10); //add current Y^2 to sum
-		sumXY += (signalX[i]/10) * (signalY[i]/10); //add current X*Y to sum
+		//divide numbers by 10 to prevent data storage overflow
+		for(uint16_t i = 0; i < n; i++)
+		{
+			sumX += signalX[i]/10; //add current X data point to sum
+			sumY += signalY[i]/10; //add current Y data point to sum
+			sumXsqr += sq(signalX[i]/10); //add current X^2 to sum
+			sumYsqr += sq(signalY[i]/10); //add current Y^2 to sum
+			sumXY += (signalX[i]/10) * (signalY[i]/10); //add current X*Y to sum
+		}
+	}
+	else
+	{
+		for(uint16_t i = 0; i < n; i++)
+		{
+			sumX += signalX[i]; //add current X data point to sum
+			sumY += signalY[i]; //add current Y data point to sum
+			sumXsqr += sq(signalX[i]); //add current X^2 to sum
+			sumYsqr += sq(signalY[i]); //add current Y^2 to sum
+			sumXY += (signalX[i]) * (signalY[i]); //add current X*Y to sum
+		}
 	}
 
 	
 	//calculate and return r value
-	//calcSqrt
 	return (n*sumXY - sumX*sumY)/sqrt((n*sumXsqr - sumX*sumX)*(n*sumYsqr - sumY*sumY));
 }
 

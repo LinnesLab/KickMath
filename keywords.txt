@@ -18,7 +18,9 @@ KickMath	KEYWORD1
 calcSqrt	KEYWORD2
 calcMagnitude	KEYWORD2
 getMax	KEYWORD2
+getAbsMax	KEYWORD2
 getMin	KEYWORD2
+getAbsMin	KEYWORD2
 getSum	KEYWORD2
 getMaxIndex	KEYWORD2
 getMinIndex	KEYWORD2
@@ -30,6 +32,8 @@ calcRMS	KEYWORD2
 calcDerivative	KEYWORD2
 calcCentroid	KEYWORD2
 tTest	KEYWORD2
+
+corr	KEYWORD2
 
 
 
