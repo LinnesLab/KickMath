@@ -2,7 +2,7 @@
  FILENAME:      KickMath.h
  AUTHOR:        Orlando S. Hoilett, Alyson S. Pickering, and Akio K. Fujita
  EMAIL:     	orlandohoilett@gmail.com
- VERSION:		4.1.0
+ VERSION:		4.0.0
  
  
  DESCRIPTION
@@ -44,7 +44,7 @@
  			- added a find function to find a specific value in an array as well
 			as a getMax and getMin function that searches within certain bounds.
  2020/08/29:1819> (UTC-5)
-			- added a cross-correlation function, corr, that's synonymous with.
+			- added a cross-correlation function
  
  *******************************************************************************
  *******************************************************************************
