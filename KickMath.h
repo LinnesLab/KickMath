@@ -71,6 +71,10 @@
  			- Chnaged xcorr function name to corr, making it equivalent to
  			MATLAB's corr function with input arrays with one column each. No
 			p-value calculation as of yet.
+ 2020/09/11:0825> (UTC-5)
+ 			- changed SE to standard_error in ttest function for compatibility.
+ 			SE might be a numeric constant for Arduino Uno, so the code wouldn't
+ 			compile for an Uno.
 
  
  DISCLAIMER
@@ -775,13 +779,13 @@ bool KickMath<Type>::tTest(const Type data1[], const Type data2[], const uint16_
 		SdNum += sq(diff[i] - meanDiff);
 	}
 	float std = sqrt(SdNum/df); //should this be samples or degress of freedom??
-	float SE = std/sqrt(samples); //standard error
+	float standard_error = std/sqrt(samples); //standard error
 	
 	
 	//t-statistic = meanDiff/SEfloat
 	//a95 is look up table for up to 35 degrees of freedom at
 	//alpha = 0.05 for two-tailed test
-	return abs(meanDiff/SE) > a95[df];
+	return abs(meanDiff/standard_error) > a95[df];
 }
 
 
