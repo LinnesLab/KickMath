@@ -48,8 +48,8 @@
  
  *******************************************************************************
  *******************************************************************************
- CHANGED VERSIONING to 4.0.0 since all edits after v3.0.0 (2020/08/18:1143> (UTC-5))
- have been pre-release, having been added to a side branch and not the main
+ CHANGED VERSIONING back to 4.0.0 since all edits after v3.0.0 (2020/08/18:1143> (UTC-5))
+ have been pre-release, having been added to a side branch and not the main branch
  *******************************************************************************
  *******************************************************************************
  
@@ -75,6 +75,8 @@
  			- changed SE to standard_error in ttest function for compatibility.
  			SE might be a numeric constant for Arduino Uno, so the code wouldn't
  			compile for an Uno.
+ 2020/09/28:2240> (UTC-5)
+ 			- Updated comments.
 
  
  DISCLAIMER
@@ -175,6 +177,7 @@ public:
 	
 	
 	static float corr(const Type signalX[], const Type signalY[], uint16_t n);
+	//static bool iscorr(const Type signalX[], const Type signalY[], uint16_t n, float r);
 	//static float corr(const Type signalX[], const Type signalY[], uint16_t n, Type lags[]);
 	
 };
@@ -239,6 +242,13 @@ uint32_t KickMath<Type>::calcMagnitude(Type x, Type y, Type z)
 }
 
 
+//uint16_t KickMath<Type>::find(const uint16_t samples, const Type data[], const Type num)
+//samples		number of samples within the array
+//data			input array containing signal
+//num			number we're searching for
+//
+//Finds a specific number within the given input array and returns the index of
+//that number. If the number is not found, return 0.
 template<typename Type>
 uint16_t KickMath<Type>::find(const uint16_t samples, const Type data[], const Type num)
 {
@@ -251,6 +261,16 @@ uint16_t KickMath<Type>::find(const uint16_t samples, const Type data[], const T
 }
 
 
+//uint16_t KickMath<Type>::find(const uint16_t samples, const Type data[], const Type num)
+//samples		number of samples within the array
+//data			input array containing signal
+//num			number we're searching for
+//i1			lower bound of the search index
+//i2			upper bound of the search index
+//
+//Finds a specific number within the given input array within the i1 and i2
+//indeces. Then returns the index of that number. If the number is not found,
+//return 0.
 template<typename Type>
 uint16_t KickMath<Type>::find(const uint16_t samples, const Type data[], const Type num, const uint16_t i1, const uint16_t i2)
 {
@@ -263,11 +283,14 @@ uint16_t KickMath<Type>::find(const uint16_t samples, const Type data[], const T
 }
 
 
-//int16_t KickMath::getMax(uint16_t samples, const int16_t data[])
+//Type KickMath<Type>::getAbsMax(uint16_t samples, const Type data[])
 //samples		number of samples within the array
 //data			input array containing signal
 //
-//Finds the max value within an input array.
+//Returns the value in the array with the largest magnitude (regardless of
+//sign). The function maintains the sign of the value when it is returned to the
+//function caller. For example, -200 has a larger magnitude than 28. The function
+//will return -200, not 200.
 template<typename Type>
 Type KickMath<Type>::getAbsMax(uint16_t samples, const Type data[])
 {
@@ -305,6 +328,13 @@ Type KickMath<Type>::getMax(uint16_t samples, const Type data[])
 }
 
 
+//Type KickMath<Type>::getMax(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2)
+//samples		number of samples within the array
+//data			input array containing signal
+//i1			lower bound of the search index
+//i2			upper bound of the search index
+//
+//Finds the index of the max value in an input array within the bounds, i1 and i2.
 template<typename Type>
 Type KickMath<Type>::getMax(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2)
 {
@@ -319,7 +349,6 @@ Type KickMath<Type>::getMax(uint16_t samples, const Type data[], const uint16_t 
 	
 	return max;
 }
-
 
 
 //uint16_t KickMath::getMaxIndex(uint16_t samples, const int32_t data[])
@@ -413,6 +442,18 @@ void KickMath<Type>::getMaxIndex(uint16_t samples, const Type data[], uint16_t m
 }
 
 
+//Type KickMath<Type>::getAbsMin(uint16_t samples, const Type data[])
+//samples		number of samples within the array
+//data			input array containing signal
+//
+//Returns the value in the array with the smallest magnitude (regardless of
+//sign). The function maintains the sign of the value when it is returned to the
+//function caller. 0 is the number with the smallest magnitude that this function
+//will return. -10, for example, has a larger magnitude than 0.
+//
+//For example, 15 has a smaller magnitude than -28. The function will return 15.
+//For example, -29 has a smaller magnitude than 75. The function will return
+//-29, not 29.
 template<typename Type>
 Type KickMath<Type>::getAbsMin(uint16_t samples, const Type data[])
 {
@@ -450,6 +491,13 @@ Type KickMath<Type>::getMin(uint16_t samples, const Type data[])
 }
 
 
+//Type KickMath<Type>::getMin(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2)
+//samples		number of samples within the array
+//data			input array containing signal
+//i1			lower bound of the search index
+//i2			upper bound of the search index
+//
+//Finds the index of the min value in an input array within the bounds, i1 and i2.
 template<typename Type>
 Type KickMath<Type>::getMin(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2)
 {
@@ -515,6 +563,16 @@ Type KickMath<Type>::calcAverage(uint16_t samples, const Type data[])
 }
 
 
+//Type KickMath<Type>::calcMedian(uint16_t samples, const Type data[], Type tmpArray[])
+//samples		number of samples within the array
+//data			input array containing signal (read-only)
+//tmpArray		to prevent the sorting algorithm from attempting to modify the
+//					read-only "data" array, give the sorting algorithm a dummy
+//					array to work with instead.
+//
+//return		the median of the input array
+//
+//Calculates the median of the given input data
 template<typename Type>
 Type KickMath<Type>::calcMedian(uint16_t samples, const Type data[], Type tmpArray[])
 {
@@ -530,11 +588,18 @@ Type KickMath<Type>::calcMedian(uint16_t samples, const Type data[], Type tmpArr
 	
 	//calculate median
 	uint16_t middleIndex = samples/2; //integer division so it truncates decimals in the event that samples is odd
-	if(samples%2 == 0) return (tmpArray[middleIndex] + tmpArray[(middleIndex)-1])/2.0;
+	if(samples%2 == 0) return (tmpArray[middleIndex] + tmpArray[(middleIndex)-1])/2.0; //if only two values, find the average
 	else return tmpArray[middleIndex];
 }
 
 
+//Type KickMath<Type>::calcMedian(uint16_t samples, Type data[])
+//samples		number of samples within the array
+//data			input array containing signal (read and write)
+//
+//return		the median of the input array
+//
+//Calculates the median of the given input data. The "data" arra is read and write.
 template<typename Type>
 Type KickMath<Type>::calcMedian(uint16_t samples, Type data[])
 {
@@ -594,6 +659,14 @@ Type KickMath<Type>::calcPeaktoPeak(uint16_t samples, const Type data[])
 }
 
 
+//Type KickMath<Type>::calcPeaktoPeak(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2)
+//samples		number of samples within the array
+//data			input array containing signal
+//i1			lower bound of the array to search through
+//i2			upper bound of the array to search through
+//
+//Calculates and returns peak-to-peak amplitude of the values in the given input
+//array, that is the maximum value minus the minimum value of the array.
 template<typename Type>
 Type KickMath<Type>::calcPeaktoPeak(uint16_t samples, const Type data[], const uint16_t i1, const uint16_t i2)
 {
@@ -789,7 +862,14 @@ bool KickMath<Type>::tTest(const Type data1[], const Type data2[], const uint16_
 }
 
 
-
+//float KickMath<Type>::corr(const Type signalX[], const Type signalY[], uint16_t n)
+//signalX			input data 1
+//signalY			input data 2
+//n					number of samples in each array
+//
+//Calculates the Pearson's correlation coefficient between two signals which is
+//a measure of the relatedness between the signals. This is equivalent to
+//MATLAB's corr function.
 //Source: https://www.statisticshowto.com/cross-correlation/
 //https://www.statisticshowto.com/probability-and-statistics/
 template<typename Type>
@@ -835,6 +915,53 @@ float KickMath<Type>::corr(const Type signalX[], const Type signalY[], uint16_t 
 	//calculate and return r value
 	return (n*sumXY - sumX*sumY)/sqrt((n*sumXsqr - sumX*sumX)*(n*sumYsqr - sumY*sumY));
 }
+
+
+////Source: https://www.statisticshowto.com/cross-correlation/
+////https://www.statisticshowto.com/probability-and-statistics/
+//template<typename Type>
+//bool KickMath<Type>::iscorr(const Type signalX[], const Type signalY[], uint16_t n, float r)
+//{
+//	//this step adds roughly 70-90 us to the function with n = 128 or 366
+//	Type abs_max_1 = abs(KickMath<Type>::getAbsMax(n, signalX));
+//	Type abs_max_2 = abs(KickMath<Type>::getAbsMax(n, signalY));
+//
+//
+//	int64_t sumX = 0; //declare variable for sum of X
+//	int64_t sumY = 0; //declare variable for sum of Y
+//	uint64_t sumXsqr = 0; //declare variable for sum of X^2
+//	uint64_t sumYsqr = 0; //declare variable for sum of Y^2
+//	int64_t sumXY = 0; //declare variable for sum of X*Y
+//
+//
+//	if(abs_max_1 > 300 || abs_max_2 > 300)
+//	{
+//		//divide numbers by 10 to prevent data storage overflow
+//		for(uint16_t i = 0; i < n; i++)
+//		{
+//			sumX += signalX[i]/10; //add current X data point to sum
+//			sumY += signalY[i]/10; //add current Y data point to sum
+//			sumXsqr += sq(signalX[i]/10); //add current X^2 to sum
+//			sumYsqr += sq(signalY[i]/10); //add current Y^2 to sum
+//			sumXY += (signalX[i]/10) * (signalY[i]/10); //add current X*Y to sum
+//		}
+//	}
+//	else
+//	{
+//		for(uint16_t i = 0; i < n; i++)
+//		{
+//			sumX += signalX[i]; //add current X data point to sum
+//			sumY += signalY[i]; //add current Y data point to sum
+//			sumXsqr += sq(signalX[i]); //add current X^2 to sum
+//			sumYsqr += sq(signalY[i]); //add current Y^2 to sum
+//			sumXY += (signalX[i]) * (signalY[i]); //add current X*Y to sum
+//		}
+//	}
+//
+//
+//	r = (n*sumXY - sumX*sumY)/sqrt((n*sumXsqr - sumX*sumX)*(n*sumYsqr - sumY*sumY)); //correlation coefficient
+//	return false;
+//}
 
 
 
